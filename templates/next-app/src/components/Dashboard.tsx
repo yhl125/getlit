@@ -3,6 +3,7 @@ import { ethers } from 'ethers';
 import { useState } from 'react';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import { useDisconnect } from 'wagmi';
+import { litNodeClient } from '@/utils/lit';
 
 interface DashboardProps {
   currentAccount: IRelayPKP;
@@ -32,6 +33,7 @@ export default function Dashboard({
       const pkpWallet = new PKPEthersWallet({
         controllerSessionSigs: sessionSigs,
         pkpPubKey: currentAccount.publicKey,
+        litNodeClient
       });
       await pkpWallet.init();
 

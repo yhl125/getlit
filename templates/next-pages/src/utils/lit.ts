@@ -10,6 +10,7 @@ import { AuthMethodType, ProviderType } from '@lit-protocol/constants';
 import {
   AuthCallbackParams,
   AuthMethod,
+  CommonGetSessionSigsProps,
   GetSessionSigsProps,
   IRelayPKP,
   SessionSigs,
@@ -23,7 +24,7 @@ export const ORIGIN =
 
 export const litNodeClient: LitNodeClient = new LitNodeClient({
   alertWhenUnauthorized: false,
-  litNetwork: 'cayenne',
+  litNetwork: 'datil-dev',
   debug: process.env.NEXT_PUBLIC_ENV === 'production' ? false : true,
 });
 
@@ -178,7 +179,7 @@ export async function getSessionSigs({
 }: {
   pkpPublicKey: string;
   authMethod: AuthMethod;
-  sessionSigsParams: GetSessionSigsProps;
+  sessionSigsParams: CommonGetSessionSigsProps;
 }): Promise<SessionSigs> {
   // const provider = getProviderByAuthMethod(authMethod);
   // if (provider) {

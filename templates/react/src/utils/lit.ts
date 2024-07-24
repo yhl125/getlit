@@ -6,11 +6,12 @@ import {
   LitAuthClient,
 } from "@lit-protocol/lit-auth-client";
 import { LitNodeClient } from "@lit-protocol/lit-node-client";
-import { AuthMethodType, ProviderType } from "@lit-protocol/constants";
+import { AuthMethodScope, AuthMethodType, ProviderType } from "@lit-protocol/constants";
 import {
   AuthCallbackParams,
   AuthMethod,
   GetSessionSigsProps,
+  CommonGetSessionSigsProps,
   IRelayPKP,
   SessionSigs,
 } from "@lit-protocol/types";
@@ -23,7 +24,7 @@ export const ORIGIN =
 
 export const litNodeClient: LitNodeClient = new LitNodeClient({
   alertWhenUnauthorized: false,
-  litNetwork: "cayenne",
+  litNetwork: "datil-dev",
   debug: import.meta.env.DEV,
 });
 
@@ -184,40 +185,21 @@ export async function getSessionSigs({
 }: {
   pkpPublicKey: string;
   authMethod: AuthMethod;
-  sessionSigsParams: GetSessionSigsProps;
+  sessionSigsParams: CommonGetSessionSigsProps;
 }): Promise<SessionSigs> {
-  // const provider = getProviderByAuthMethod(authMethod);
-  // if (provider) {
-  //   const sessionSigs = await provider.getSessionSigs({
-  //     pkpPublicKey,
-  //     authMethod,
-  //     sessionSigsParams,
-  //   });
-  //   return sessionSigs;
-  // } else {
-  //   throw new Error(
-  //     `Provider not found for auth method type ${authMethod.authMethodType}`
-  //   );
-  // }
-  await litNodeClient.connect();
-  const authNeededCallback = async (params: AuthCallbackParams) => {
-    const response = await litNodeClient.signSessionKey({
-      statement: params.statement,
-      authMethods: [authMethod],
-      pkpPublicKey: pkpPublicKey,
-      expiration: params.expiration,
-      resources: params.resources,
-      chainId: 1,
+  const provider = getProviderByAuthMethod(authMethod);
+  if (provider) {
+    const sessionSigs = await provider.getSessionSigs({
+      pkpPublicKey,
+      authMethod,
+      sessionSigsParams,
     });
-    return response.authSig;
-  };
-
-  const sessionSigs = await litNodeClient.getSessionSigs({
-    ...sessionSigsParams,
-    authNeededCallback,
-  });
-
-  return sessionSigs;
+    return sessionSigs;
+  } else {
+    throw new Error(
+      `Provider not found for auth method type ${authMethod.authMethodType}`
+    );
+  }
 }
 
 export async function updateSessionSigs(
@@ -257,7 +239,6 @@ export async function mintPKP(authMethod: AuthMethod): Promise<IRelayPKP> {
       "Enter the auth method scope.\n0 - no permissions\n1 - to sign anything\n2 - to only sign messages. \n\nRead more at https://developer.litprotocol.com/v3/sdk/wallets/auth-methods/#auth-method-scopes"
     ) || "0";
   const authMethodScope = parseInt(authMethodScopePrompt);
-  console.log("authMethodScope:", authMethodScope);
 
   let txHash: string;
 
@@ -275,6 +256,7 @@ export async function mintPKP(authMethod: AuthMethod): Promise<IRelayPKP> {
     // Mint PKP through relay server
     txHash = await provider.mintPKPThroughRelayer(authMethod, {
       permittedAuthMethodScopes: [[authMethodScope]],
+      keyType: 2
     });
   }
 

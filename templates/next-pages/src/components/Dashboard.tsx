@@ -5,6 +5,7 @@ import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import { useRouter } from 'next/router';
 import { useDisconnect } from 'wagmi';
 import { AuthMethodType } from '@lit-protocol/constants';
+import { litNodeClient } from '../utils/lit';
 
 interface DashboardProps {
   currentAccount: IRelayPKP;
@@ -35,6 +36,7 @@ export default function Dashboard({
       const pkpWallet = new PKPEthersWallet({
         controllerSessionSigs: sessionSigs,
         pkpPubKey: currentAccount.publicKey,
+        litNodeClient
       });
       await pkpWallet.init();
 
